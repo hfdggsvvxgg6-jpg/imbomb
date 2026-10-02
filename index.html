@@ -431,17 +431,18 @@
     .barcode-box {
       background-color: var(--barcode-bg);
       border-radius: 6px;
-      padding: 10px 12px;
+      padding: 10px 14px;
       width: 100%;
+      max-width: 380px;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 68px;
+      height: 65px;
     }
 
     .barcode-box svg {
       width: 100%;
-      max-height: 52px;
+      height: 100%;
       display: block;
     }
 
@@ -711,7 +712,7 @@
     const DEFAULT_IMEI1 = '359779345308528';
     const DEFAULT_IMEI2 = '359779347140317';
 
-    // Gerador de Código de Barras CODE128 Nativo (100% SVG Naming-Safe para iOS/PWA)
+    // Gerador de Código de Barras CODE128 C/B Otimizado (SVG Full-Width)
     const CODE128_PATTERNS = [
       "212222","222122","222221","121223","121322","131222","122213","122312","132212","221213",
       "221312","231212","112232","122132","122231","113222","123122","123221","223211","221132",
@@ -728,20 +729,27 @@
 
     function drawCode128(svgElement, text) {
       if (!svgElement || !text) return;
-      
-      while (svgElement.firstChild) {
-        svgElement.removeChild(svgElement.firstChild);
-      }
 
-      let codes = [104]; // Start B
-      for (let i = 0; i < text.length; i++) {
-        let charCode = text.charCodeAt(i);
-        codes.push(charCode >= 32 ? charCode - 32 : charCode + 64);
+      const digits = text.replace(/\D/g, '');
+      if (!digits) return;
+
+      let codes = [105]; // Start C (Otimizado para números)
+      let i = 0;
+
+      while (i < digits.length) {
+        if (i + 1 < digits.length) {
+          codes.push(parseInt(digits.substr(i, 2), 10));
+          i += 2;
+        } else {
+          codes.push(100); // Alterna para Code B se o número for ímpar
+          codes.push(digits.charCodeAt(i) - 32);
+          i += 1;
+        }
       }
 
       let checksum = codes[0];
-      for (let i = 1; i < codes.length; i++) {
-        checksum += codes[i] * i;
+      for (let j = 1; j < codes.length; j++) {
+        checksum += codes[j] * j;
       }
       codes.push(checksum % 103);
       codes.push(106); // Stop
@@ -752,24 +760,29 @@
       });
 
       let totalModules = 0;
-      for (let i = 0; i < patternStr.length; i++) {
-        totalModules += parseInt(patternStr[i], 10);
+      for (let k = 0; k < patternStr.length; k++) {
+        totalModules += parseInt(patternStr[k], 10);
       }
 
       const svgNS = "http://www.w3.org/2000/svg";
       const height = 50;
-      const quietZone = 10;
+      const quietZone = 8;
       const totalWidth = totalModules + (quietZone * 2);
 
+      while (svgElement.firstChild) {
+        svgElement.removeChild(svgElement.firstChild);
+      }
+
       svgElement.setAttribute("viewBox", `0 0 ${totalWidth} ${height}`);
+      svgElement.setAttribute("preserveAspectRatio", "none");
       svgElement.setAttribute("width", "100%");
       svgElement.setAttribute("height", "100%");
 
       let currentX = quietZone;
       let drawBar = true;
 
-      for (let i = 0; i < patternStr.length; i++) {
-        let width = parseInt(patternStr[i], 10);
+      for (let k = 0; k < patternStr.length; k++) {
+        let width = parseInt(patternStr[k], 10);
         if (drawBar) {
           let rect = document.createElementNS(svgNS, "rect");
           rect.setAttribute("x", currentX);

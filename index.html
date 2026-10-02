@@ -373,12 +373,12 @@
 
     .imei-header-actions {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       margin-bottom: 24px;
     }
 
-    .close-icon-btn, .config-icon-btn {
+    .close-icon-btn {
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -389,7 +389,7 @@
       cursor: pointer;
     }
 
-    .close-icon-btn svg, .config-icon-btn svg {
+    .close-icon-btn svg {
       width: 18px;
       height: 18px;
       fill: var(--icon-fill);
@@ -468,84 +468,6 @@
 
     .share-btn:active {
       background-color: #1e6bc4;
-    }
-
-    .config-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-overlay);
-      display: none;
-      flex-direction: column;
-      z-index: 3000;
-      padding: calc(env(safe-area-inset-top, 20px) + 20px) 24px calc(env(safe-area-inset-bottom, 20px) + 20px) 24px;
-      overflow-y: auto;
-    }
-
-    .config-screen.active {
-      display: flex;
-    }
-
-    .config-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .config-subtitle {
-      font-size: 14px;
-      color: var(--text-sub);
-      margin-bottom: 28px;
-      line-height: 1.4;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
-    .input-group label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-blue);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .input-group input {
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-input);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text-primary);
-      font-size: 15px;
-      outline: none;
-      -webkit-user-select: text;
-      user-select: text;
-    }
-
-    .save-config-btn {
-      width: 100%;
-      background-color: #34c759;
-      color: #ffffff;
-      border: none;
-      border-radius: 28px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: auto;
-      text-align: center;
-      transition: background-color 0.15s ease;
-    }
-
-    .save-config-btn:active {
-      background-color: #28a745;
     }
   </style>
 </head>
@@ -648,12 +570,6 @@
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
         </svg>
       </div>
-
-      <div class="config-icon-btn" id="openConfigBtn">
-        <svg viewBox="0 0 24 24">
-          <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-        </svg>
-      </div>
     </div>
 
     <h1 class="imei-screen-title">Compartilhe os identificadores<br>do dispositivo</h1>
@@ -685,28 +601,6 @@
     </div>
   </div>
 
-  <div class="config-screen" id="configScreen">
-    <h1 class="config-title">Configurar Identificadores</h1>
-    <p class="config-subtitle">Insira os números que serão exibidos e gerados dinamicamente ao discar *#06#.</p>
-
-    <div class="input-group">
-      <label for="inputEID">EID (32 dígitos)</label>
-      <input type="text" id="inputEID" placeholder="Ex: 89049032007208882600167701709462" autocomplete="off" />
-    </div>
-
-    <div class="input-group">
-      <label for="inputIMEI1">IMEI 1 (15 dígitos)</label>
-      <input type="text" id="inputIMEI1" placeholder="Ex: 359779345308528" autocomplete="off" />
-    </div>
-
-    <div class="input-group">
-      <label for="inputIMEI2">IMEI 2 (15 dígitos)</label>
-      <input type="text" id="inputIMEI2" placeholder="Ex: 359779347140317" autocomplete="off" />
-    </div>
-
-    <button class="save-config-btn" id="saveConfigBtn">Salvar e Continuar</button>
-  </div>
-
   <script>
     const DEFAULT_EID = '89049032007208882600167701709462';
     const DEFAULT_IMEI1 = '359779345308528';
@@ -733,7 +627,7 @@
       const digits = text.replace(/\D/g, '');
       if (!digits) return;
 
-      let codes = [105]; // Start C (Otimizado para números)
+      let codes = [105];
       let i = 0;
 
       while (i < digits.length) {
@@ -741,7 +635,7 @@
           codes.push(parseInt(digits.substr(i, 2), 10));
           i += 2;
         } else {
-          codes.push(100); // Alterna para Code B se o número for ímpar
+          codes.push(100);
           codes.push(digits.charCodeAt(i) - 32);
           i += 1;
         }
@@ -752,7 +646,7 @@
         checksum += codes[j] * j;
       }
       codes.push(checksum % 103);
-      codes.push(106); // Stop
+      codes.push(106);
 
       let patternStr = "";
       codes.forEach(c => {
@@ -802,11 +696,9 @@
     const displayEl = document.getElementById('display');
     const addContactBtn = document.getElementById('addContact');
     const deleteBtn = document.getElementById('deleteBtn');
+    const callBtn = document.getElementById('callBtn');
     const imeiScreen = document.getElementById('imeiScreen');
-    const configScreen = document.getElementById('configScreen');
     const closeImeiBtn = document.getElementById('closeImeiBtn');
-    const openConfigBtn = document.getElementById('openConfigBtn');
-    const saveConfigBtn = document.getElementById('saveConfigBtn');
 
     function updateDisplay() {
       displayEl.textContent = displayValue;
@@ -866,6 +758,13 @@
     deleteBtn.addEventListener('touchend', () => clearInterval(deleteInterval));
     deleteBtn.addEventListener('touchmove', () => clearInterval(deleteInterval));
 
+    // Ação do Botão de Ligar: Abre a chamada nativa do sistema
+    callBtn.addEventListener('click', () => {
+      if (displayValue.trim() !== '') {
+        window.location.href = `tel:${encodeURIComponent(displayValue)}`;
+      }
+    });
+
     function renderBarcodes() {
       const eidVal = (localStorage.getItem('app_eid') || DEFAULT_EID).trim();
       const imei1Val = (localStorage.getItem('app_imei1') || DEFAULT_IMEI1).trim();
@@ -887,26 +786,6 @@
 
     closeImeiBtn.addEventListener('click', () => {
       imeiScreen.classList.remove('active');
-    });
-
-    openConfigBtn.addEventListener('click', () => {
-      document.getElementById('inputEID').value = localStorage.getItem('app_eid') || DEFAULT_EID;
-      document.getElementById('inputIMEI1').value = localStorage.getItem('app_imei1') || DEFAULT_IMEI1;
-      document.getElementById('inputIMEI2').value = localStorage.getItem('app_imei2') || DEFAULT_IMEI2;
-      configScreen.classList.add('active');
-    });
-
-    saveConfigBtn.addEventListener('click', () => {
-      const e = document.getElementById('inputEID').value;
-      const i1 = document.getElementById('inputIMEI1').value;
-      const i2 = document.getElementById('inputIMEI2').value;
-
-      if (e) localStorage.setItem('app_eid', e);
-      if (i1) localStorage.setItem('app_imei1', i1);
-      if (i2) localStorage.setItem('app_imei2', i2);
-
-      configScreen.classList.remove('active');
-      renderBarcodes();
     });
 
     document.querySelectorAll('.tab-item').forEach(tab => {

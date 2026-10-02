@@ -1,10 +1,9 @@
-const CACHE_NAME = 'dialer-pwa-v1';
+const CACHE_NAME = 'dialer-pwa-v2';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './JsBarcode.all.min.js',
   './icon-180.png',
   './favicon-32x32.png',
   './favicon-16x16.png'

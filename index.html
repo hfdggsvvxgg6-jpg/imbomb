@@ -1,54 +1,811 @@
-const CACHE_NAME = 'dialer-pwa-v3';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Telefone">
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-180.png',
-  './favicon-32x32.png',
-  './favicon-16x16.png'
-];
+  <title>Discador</title>
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
-  );
-});
+  <style>
+    :root {
+      --bg-main: #000000;
+      --bg-card: #2c2c2e;
+      --bg-overlay: #121315;
+      --bg-nav: #1c1c1e;
+      --bg-input: #202227;
+      --border-input: #32363e;
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --text-sub: #98989d;
+      --btn-active: #444446;
+      --icon-fill: #a5a5a7;
+      --accent-blue: #29b6f6;
+      --barcode-bg: #ffffff;
+    }
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-main: #f2f2f7;
+        --bg-card: #e5e5ea;
+        --bg-overlay: #ffffff;
+        --bg-nav: #e5e5ea;
+        --bg-input: #f2f2f7;
+        --border-input: #d1d1d6;
+        --text-primary: #000000;
+        --text-secondary: #8e8e93;
+        --text-sub: #6c6c70;
+        --btn-active: #d1d1d6;
+        --icon-fill: #8e8e93;
+        --accent-blue: #007aff;
+        --barcode-bg: #ffffff;
       }
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .views-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top, 40px);
+      padding-bottom: 80px;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    #view-keypad {
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 125px;
+    }
+
+    .display-container {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 12px;
+      padding: 0 20px;
+      min-height: 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .phone-number {
+      font-size: 36px;
+      font-weight: 300;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      color: var(--text-primary);
+    }
+
+    .add-contact-btn {
+      color: var(--accent-blue);
+      font-size: 14px;
+      margin-top: 4px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .add-contact-btn.visible {
+      display: block;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px 20px;
+      margin-bottom: 12px;
+      justify-items: center;
+    }
+
+    .key {
+      width: clamp(68px, 20vw, 92px);
+      height: clamp(68px, 20vw, 92px);
+      border-radius: 50%;
+      background-color: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .key:active {
+      background-color: var(--btn-active);
+      transform: scale(0.95);
+    }
+
+    .number {
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--text-primary);
+    }
+
+    .letters {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      margin-top: 2px;
+      color: var(--text-secondary);
+    }
+
+    .actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px 20px;
+      width: 100%;
+      max-width: 320px;
+      align-items: center;
+      justify-items: center;
+      margin-bottom: 5px;
+    }
+
+    .call-btn {
+      grid-column: 2;
+      width: clamp(68px, 20vw, 92px);
+      height: clamp(68px, 20vw, 92px);
+      border-radius: 50%;
+      background-color: #34c759;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .call-btn:active {
+      background-color: #28a745;
+      transform: scale(0.95);
+    }
+
+    .call-btn svg {
+      width: 38px;
+      height: 38px;
+      fill: #ffffff;
+    }
+
+    .delete-btn {
+      grid-column: 3;
+      color: var(--icon-fill);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease;
+      padding: 10px;
+    }
+
+    .delete-btn.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .delete-btn svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--icon-fill);
+    }
+
+    .placeholder-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+
+    .placeholder-screen h2 {
+      color: var(--text-primary);
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .bottom-nav-container {
+      position: fixed;
+      bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      z-index: 1000;
+    }
+
+    .tab-bar-pill {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-nav);
+      border-radius: 40px;
+      padding: 4px 6px;
+      flex: 1;
+      max-width: 310px;
+      justify-content: space-between;
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 30px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .tab-item.active {
+      background-color: var(--bg-card);
+      color: var(--accent-blue);
+    }
+
+    .tab-item .icon-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 3px;
+    }
+
+    .tab-item svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .tab-item.active svg {
+      fill: var(--accent-blue);
+    }
+
+    .badge {
+      position: absolute;
+      top: -3px;
+      right: -6px;
+      background-color: #ff3b30;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--bg-nav);
+    }
+
+    .search-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: var(--bg-nav);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .search-btn:active {
+      background-color: var(--bg-card);
+      transform: scale(0.95);
+    }
+
+    .search-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--text-primary);
+    }
+
+    .imei-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-overlay);
+      display: none;
+      flex-direction: column;
+      z-index: 2000;
+      padding: calc(env(safe-area-inset-top, 20px) + 15px) 24px calc(env(safe-area-inset-bottom, 20px) + 15px) 24px;
+      overflow-y: auto;
+    }
+
+    .imei-screen.active {
+      display: flex;
+    }
+
+    .imei-header-actions {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .close-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .close-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--icon-fill);
+    }
+
+    .imei-screen-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    .imei-screen-subtitle {
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.35;
+      margin-bottom: 28px;
+    }
+
+    .barcode-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 22px;
+      width: 100%;
+    }
+
+    .barcode-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-align: center;
+      letter-spacing: 0.2px;
+      word-break: break-all;
+    }
+
+    .barcode-box {
+      background-color: var(--barcode-bg);
+      border-radius: 6px;
+      padding: 10px 14px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 65px;
+    }
+
+    .barcode-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .share-btn-container {
+      margin-top: auto;
+      padding-top: 15px;
+      width: 100%;
+    }
+
+    .share-btn {
+      width: 100%;
+      background-color: #2a82e4;
+      color: #ffffff;
+      border: none;
+      border-radius: 28px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.15s ease;
+    }
+
+    .share-btn:active {
+      background-color: #1e6bc4;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="views-container">
+    <div class="view" id="view-recents">
+      <div class="placeholder-screen">
+        <h2>Chamadas</h2>
+        <p>Histórico de chamadas recentes</p>
+      </div>
+    </div>
+
+    <div class="view" id="view-contacts">
+      <div class="placeholder-screen">
+        <h2>Contatos</h2>
+        <p>Lista de contatos</p>
+      </div>
+    </div>
+
+    <div class="view active" id="view-keypad">
+      <div class="display-container">
+        <div class="phone-number" id="display"></div>
+        <div class="add-contact-btn" id="addContact">Adicionar Número</div>
+      </div>
+
+      <div class="keypad">
+        <div class="key" data-value="1"><span class="number">1</span><span class="letters">&nbsp;</span></div>
+        <div class="key" data-value="2"><span class="number">2</span><span class="letters">A B C</span></div>
+        <div class="key" data-value="3"><span class="number">3</span><span class="letters">D E F</span></div>
+        <div class="key" data-value="4"><span class="number">4</span><span class="letters">G H I</span></div>
+        <div class="key" data-value="5"><span class="number">5</span><span class="letters">J K L</span></div>
+        <div class="key" data-value="6"><span class="number">6</span><span class="letters">M N O</span></div>
+        <div class="key" data-value="7"><span class="number">7</span><span class="letters">P Q R S</span></div>
+        <div class="key" data-value="8"><span class="number">8</span><span class="letters">T U V</span></div>
+        <div class="key" data-value="9"><span class="number">9</span><span class="letters">W X Y Z</span></div>
+        <div class="key" data-value="*"><span class="number" style="margin-top: 6px;">*</span><span class="letters"></span></div>
+        <div class="key" data-value="0" id="key-zero"><span class="number">0</span><span class="letters">+</span></div>
+        <div class="key" data-value="#"><span class="number">#</span><span class="letters"></span></div>
+      </div>
+
+      <div class="actions-row">
+        <div class="call-btn" id="callBtn">
+          <svg viewBox="0 0 24 24">
+            <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          </svg>
+        </div>
+        
+        <div class="delete-btn" id="deleteBtn">
+          <svg viewBox="0 0 24 24">
+            <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav-container">
+    <nav class="tab-bar-pill">
+      <div class="tab-item" data-tab="recents">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+          </svg>
+          <span class="badge">1</span>
+        </div>
+        <span>Chamadas</span>
+      </div>
+
+      <div class="tab-item" data-tab="contacts">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+        <span>Contatos</span>
+      </div>
+
+      <div class="tab-item active" data-tab="keypad">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 5h3v3H6V5zm4.5 0h3v3h-3V5zm4.5 0h3v3h-3V5zM6 9.5h3v3H6v-3zm4.5 0h3v3h-3v-3zm4.5 0h3v3h-3v-3zM6 14h3v3H6v-3zm4.5 0h3v3h-3v-3zm4.5 0h3v3h-3v-3z"/>
+          </svg>
+        </div>
+        <span>Teclado numérico</span>
+      </div>
+    </nav>
+
+    <button class="search-btn" id="searchBtn" aria-label="Pesquisar">
+      <svg viewBox="0 0 24 24">
+        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="imei-screen" id="imeiScreen">
+    <div class="imei-header-actions">
+      <div class="close-icon-btn" id="closeImeiBtn">
+        <svg viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1 class="imei-screen-title">Compartilhe os identificadores<br>do dispositivo</h1>
+    <p class="imei-screen-subtitle">Para compartilhar o EID e os IMEIs, escaneie os códigos de barras ou aproxime o iPhone de um leitor.</p>
+
+    <div class="barcode-section" id="section-eid">
+      <div class="barcode-label" id="eidLabel">EID </div>
+      <div class="barcode-box">
+        <svg id="barcodeEID"></svg>
+      </div>
+    </div>
+
+    <div class="barcode-section" id="section-imei1">
+      <div class="barcode-label" id="imei1Label">IMEI </div>
+      <div class="barcode-box">
+        <svg id="barcodeIMEI1"></svg>
+      </div>
+    </div>
+
+    <div class="barcode-section" id="section-imei2">
+      <div class="barcode-label" id="imei2Label">IMEI2 </div>
+      <div class="barcode-box">
+        <svg id="barcodeIMEI2"></svg>
+      </div>
+    </div>
+
+    <div class="share-btn-container">
+      <button class="share-btn" id="shareImeiBtn">Usar o Leitor para Compartilhar</button>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_EID = '89049032007208882600167701709462';
+    const DEFAULT_IMEI1 = '359779345308528';
+    const DEFAULT_IMEI2 = '359779347140317';
+
+    // Gerador de Código de Barras CODE128 C/B Otimizado (SVG Full-Width)
+    const CODE128_PATTERNS = [
+      "212222","222122","222221","121223","121322","131222","122213","122312","132212","221213",
+      "221312","231212","112232","122132","122231","113222","123122","123221","223211","221132",
+      "221231","213212","223112","312131","311222","321122","321221","312212","322112","322211",
+      "212123","212321","232121","111323","131123","131321","112313","132113","132311","211313",
+      "231113","231311","112133","112331","132131","113123","113321","133121","313121","211331",
+      "231131","213113","213311","213131","311123","311321","331121","312113","312311","332111",
+      "314111","221411","431111","111224","111422","121124","121421","141122","141221","112214",
+      "112412","122114","122411","142112","142211","241211","221114","413111","241112","134111",
+      "111242","121142","121241","114212","124112","124211","411212","421112","421211","212141",
+      "214121","412121","111143","111341","131141","114113","114311","411113","411311","113141",
+      "114131","311141","411131","211412","211214","211232","2331112"
+    ];
+
+    function drawCode128(svgElement, text) {
+      if (!svgElement || !text) return;
+
+      const digits = text.replace(/\D/g, '');
+      if (!digits) return;
+
+      let codes = [105];
+      let i = 0;
+
+      while (i < digits.length) {
+        if (i + 1 < digits.length) {
+          codes.push(parseInt(digits.substr(i, 2), 10));
+          i += 2;
+        } else {
+          codes.push(100);
+          codes.push(digits.charCodeAt(i) - 32);
+          i += 1;
         }
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return networkResponse;
+      }
+
+      let checksum = codes[0];
+      for (let j = 1; j < codes.length; j++) {
+        checksum += codes[j] * j;
+      }
+      codes.push(checksum % 103);
+      codes.push(106);
+
+      let patternStr = "";
+      codes.forEach(c => {
+        patternStr += CODE128_PATTERNS[c];
       });
-    })
-  );
-});
+
+      let totalModules = 0;
+      for (let k = 0; k < patternStr.length; k++) {
+        totalModules += parseInt(patternStr[k], 10);
+      }
+
+      const svgNS = "http://www.w3.org/2000/svg";
+      const height = 50;
+      const quietZone = 8;
+      const totalWidth = totalModules + (quietZone * 2);
+
+      while (svgElement.firstChild) {
+        svgElement.removeChild(svgElement.firstChild);
+      }
+
+      svgElement.setAttribute("viewBox", `0 0 ${totalWidth} ${height}`);
+      svgElement.setAttribute("preserveAspectRatio", "none");
+      svgElement.setAttribute("width", "100%");
+      svgElement.setAttribute("height", "100%");
+
+      let currentX = quietZone;
+      let drawBar = true;
+
+      for (let k = 0; k < patternStr.length; k++) {
+        let width = parseInt(patternStr[k], 10);
+        if (drawBar) {
+          let rect = document.createElementNS(svgNS, "rect");
+          rect.setAttribute("x", currentX);
+          rect.setAttribute("y", 0);
+          rect.setAttribute("width", width);
+          rect.setAttribute("height", height);
+          rect.setAttribute("fill", "#000000");
+          svgElement.appendChild(rect);
+        }
+        currentX += width;
+        drawBar = !drawBar;
+      }
+    }
+
+    let displayValue = '';
+
+    const displayEl = document.getElementById('display');
+    const addContactBtn = document.getElementById('addContact');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const callBtn = document.getElementById('callBtn');
+    const imeiScreen = document.getElementById('imeiScreen');
+    const closeImeiBtn = document.getElementById('closeImeiBtn');
+
+    function updateDisplay() {
+      displayEl.textContent = displayValue;
+      if (displayValue.length > 0) {
+        deleteBtn.classList.add('visible');
+        addContactBtn.classList.add('visible');
+      } else {
+        deleteBtn.classList.remove('visible');
+        addContactBtn.classList.remove('visible');
+      }
+
+      if (displayValue === '*#06#') {
+        displayValue = '';
+        updateDisplay();
+        openImeiScreen();
+      }
+    }
+
+    document.querySelectorAll('.key').forEach(key => {
+      key.addEventListener('click', () => {
+        const val = key.getAttribute('data-value');
+        displayValue += val;
+        updateDisplay();
+      });
+    });
+
+    let zeroPressTimer;
+    const zeroKey = document.getElementById('key-zero');
+
+    zeroKey.addEventListener('touchstart', () => {
+      zeroPressTimer = setTimeout(() => {
+        displayValue = displayValue.slice(0, -1) + '+';
+        updateDisplay();
+      }, 500);
+    });
+
+    zeroKey.addEventListener('touchend', () => clearTimeout(zeroPressTimer));
+    zeroKey.addEventListener('touchmove', () => clearTimeout(zeroPressTimer));
+
+    deleteBtn.addEventListener('click', () => {
+      displayValue = displayValue.slice(0, -1);
+      updateDisplay();
+    });
+
+    let deleteInterval;
+    deleteBtn.addEventListener('touchstart', () => {
+      deleteInterval = setInterval(() => {
+        if (displayValue.length > 0) {
+          displayValue = displayValue.slice(0, -1);
+          updateDisplay();
+        } else {
+          clearInterval(deleteInterval);
+        }
+      }, 100);
+    });
+
+    deleteBtn.addEventListener('touchend', () => clearInterval(deleteInterval));
+    deleteBtn.addEventListener('touchmove', () => clearInterval(deleteInterval));
+
+    // Ação do Botão de Ligar: Abre a chamada nativa do sistema
+    callBtn.addEventListener('click', () => {
+      if (displayValue.trim() !== '') {
+        window.location.href = `tel:${encodeURIComponent(displayValue)}`;
+      }
+    });
+
+    function renderBarcodes() {
+      const eidVal = (localStorage.getItem('app_eid') || DEFAULT_EID).trim();
+      const imei1Val = (localStorage.getItem('app_imei1') || DEFAULT_IMEI1).trim();
+      const imei2Val = (localStorage.getItem('app_imei2') || DEFAULT_IMEI2).trim();
+
+      document.getElementById('eidLabel').textContent = `EID ${eidVal}`;
+      document.getElementById('imei1Label').textContent = `IMEI ${imei1Val}`;
+      document.getElementById('imei2Label').textContent = `IMEI2 ${imei2Val}`;
+
+      if (eidVal) drawCode128(document.getElementById('barcodeEID'), eidVal);
+      if (imei1Val) drawCode128(document.getElementById('barcodeIMEI1'), imei1Val);
+      if (imei2Val) drawCode128(document.getElementById('barcodeIMEI2'), imei2Val);
+    }
+
+    function openImeiScreen() {
+      renderBarcodes();
+      imeiScreen.classList.add('active');
+    }
+
+    closeImeiBtn.addEventListener('click', () => {
+      imeiScreen.classList.remove('active');
+    });
+
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+        tab.classList.add('active');
+        const targetView = tab.getAttribute('data-tab');
+        document.getElementById(`view-${targetView}`).classList.add('active');
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registrado:', reg.scope))
+          .catch(err => console.error('Erro ao registrar Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>

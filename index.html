@@ -469,85 +469,6 @@
     .share-btn:active {
       background-color: #1e6bc4;
     }
-
-    /* Tela de Configuração Inicial */
-    .config-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-overlay);
-      display: none;
-      flex-direction: column;
-      z-index: 5000;
-      padding: calc(env(safe-area-inset-top, 20px) + 20px) 24px calc(env(safe-area-inset-bottom, 20px) + 20px) 24px;
-      overflow-y: auto;
-    }
-
-    .config-screen.active {
-      display: flex !important;
-    }
-
-    .config-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .config-subtitle {
-      font-size: 14px;
-      color: var(--text-sub);
-      margin-bottom: 28px;
-      line-height: 1.4;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
-    .input-group label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-blue);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .input-group input {
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-input);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text-primary);
-      font-size: 15px;
-      outline: none;
-      -webkit-user-select: text;
-      user-select: text;
-    }
-
-    .save-config-btn {
-      width: 100%;
-      background-color: #34c759;
-      color: #ffffff;
-      border: none;
-      border-radius: 28px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: auto;
-      text-align: center;
-      transition: background-color 0.15s ease;
-    }
-
-    .save-config-btn:active {
-      background-color: #28a745;
-    }
   </style>
 </head>
 <body>
@@ -642,7 +563,6 @@
     </button>
   </div>
 
-  <!-- Tela de Exibição de IMEI (Sem botão de engrenagem) -->
   <div class="imei-screen" id="imeiScreen">
     <div class="imei-header-actions">
       <div class="close-icon-btn" id="closeImeiBtn">
@@ -681,34 +601,12 @@
     </div>
   </div>
 
-  <!-- Tela de Configuração Inicial -->
-  <div class="config-screen" id="configScreen">
-    <h1 class="config-title">Configurar Identificadores</h1>
-    <p class="config-subtitle">Insira os números do seu dispositivo para personalizar os identificadores exibidos em *#06#.</p>
-
-    <div class="input-group">
-      <label for="inputEID">EID (32 dígitos)</label>
-      <input type="text" id="inputEID" placeholder="Ex: 89049032007208882600167701709462" autocomplete="off" />
-    </div>
-
-    <div class="input-group">
-      <label for="inputIMEI1">IMEI 1 (15 dígitos)</label>
-      <input type="text" id="inputIMEI1" placeholder="Ex: 359779345308528" autocomplete="off" />
-    </div>
-
-    <div class="input-group">
-      <label for="inputIMEI2">IMEI 2 (15 dígitos)</label>
-      <input type="text" id="inputIMEI2" placeholder="Ex: 359779347140317" autocomplete="off" />
-    </div>
-
-    <button class="save-config-btn" id="saveConfigBtn">Salvar e Continuar</button>
-  </div>
-
   <script>
     const DEFAULT_EID = '89049032007208882600167701709462';
     const DEFAULT_IMEI1 = '359779345308528';
     const DEFAULT_IMEI2 = '359779347140317';
 
+    // Gerador de Código de Barras CODE128 C/B Otimizado (SVG Full-Width)
     const CODE128_PATTERNS = [
       "212222","222122","222221","121223","121322","131222","122213","122312","132212","221213",
       "221312","231212","112232","122132","122231","113222","123122","123221","223211","221132",
@@ -801,32 +699,6 @@
     const callBtn = document.getElementById('callBtn');
     const imeiScreen = document.getElementById('imeiScreen');
     const closeImeiBtn = document.getElementById('closeImeiBtn');
-    const configScreen = document.getElementById('configScreen');
-    const saveConfigBtn = document.getElementById('saveConfigBtn');
-
-    // Executa a verificação imediatamente
-    function checkFirstRun() {
-      const isConfigured = localStorage.getItem('app_configured');
-      if (isConfigured !== 'true') {
-        document.getElementById('inputEID').value = localStorage.getItem('app_eid') || DEFAULT_EID;
-        document.getElementById('inputIMEI1').value = localStorage.getItem('app_imei1') || DEFAULT_IMEI1;
-        document.getElementById('inputIMEI2').value = localStorage.getItem('app_imei2') || DEFAULT_IMEI2;
-        configScreen.classList.add('active');
-      }
-    }
-
-    saveConfigBtn.addEventListener('click', () => {
-      const e = document.getElementById('inputEID').value.trim();
-      const i1 = document.getElementById('inputIMEI1').value.trim();
-      const i2 = document.getElementById('inputIMEI2').value.trim();
-
-      localStorage.setItem('app_eid', e || DEFAULT_EID);
-      localStorage.setItem('app_imei1', i1 || DEFAULT_IMEI1);
-      localStorage.setItem('app_imei2', i2 || DEFAULT_IMEI2);
-      localStorage.setItem('app_configured', 'true');
-
-      configScreen.classList.remove('active');
-    });
 
     function updateDisplay() {
       displayEl.textContent = displayValue;
@@ -886,6 +758,7 @@
     deleteBtn.addEventListener('touchend', () => clearInterval(deleteInterval));
     deleteBtn.addEventListener('touchmove', () => clearInterval(deleteInterval));
 
+    // Ação do Botão de Ligar: Abre a chamada nativa do sistema
     callBtn.addEventListener('click', () => {
       if (displayValue.trim() !== '') {
         window.location.href = `tel:${encodeURIComponent(displayValue)}`;
@@ -898,4 +771,41 @@
       const imei2Val = (localStorage.getItem('app_imei2') || DEFAULT_IMEI2).trim();
 
       document.getElementById('eidLabel').textContent = `EID ${eidVal}`;
-      document.getElementById('
+      document.getElementById('imei1Label').textContent = `IMEI ${imei1Val}`;
+      document.getElementById('imei2Label').textContent = `IMEI2 ${imei2Val}`;
+
+      if (eidVal) drawCode128(document.getElementById('barcodeEID'), eidVal);
+      if (imei1Val) drawCode128(document.getElementById('barcodeIMEI1'), imei1Val);
+      if (imei2Val) drawCode128(document.getElementById('barcodeIMEI2'), imei2Val);
+    }
+
+    function openImeiScreen() {
+      renderBarcodes();
+      imeiScreen.classList.add('active');
+    }
+
+    closeImeiBtn.addEventListener('click', () => {
+      imeiScreen.classList.remove('active');
+    });
+
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+        tab.classList.add('active');
+        const targetView = tab.getAttribute('data-tab');
+        document.getElementById(`view-${targetView}`).classList.add('active');
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registrado:', reg.scope))
+          .catch(err => console.error('Erro ao registrar Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>

@@ -373,12 +373,12 @@
 
     .imei-header-actions {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       margin-bottom: 24px;
     }
 
-    .close-icon-btn, .config-icon-btn {
+    .close-icon-btn {
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -389,7 +389,7 @@
       cursor: pointer;
     }
 
-    .close-icon-btn svg, .config-icon-btn svg {
+    .close-icon-btn svg {
       width: 18px;
       height: 18px;
       fill: var(--icon-fill);
@@ -470,6 +470,7 @@
       background-color: #1e6bc4;
     }
 
+    /* Tela de Configuração Inicial */
     .config-screen {
       position: fixed;
       top: 0;
@@ -479,13 +480,13 @@
       background-color: var(--bg-overlay);
       display: none;
       flex-direction: column;
-      z-index: 3000;
+      z-index: 5000;
       padding: calc(env(safe-area-inset-top, 20px) + 20px) 24px calc(env(safe-area-inset-bottom, 20px) + 20px) 24px;
       overflow-y: auto;
     }
 
     .config-screen.active {
-      display: flex;
+      display: flex !important;
     }
 
     .config-title {
@@ -641,17 +642,12 @@
     </button>
   </div>
 
+  <!-- Tela de Exibição de IMEI (Sem botão de engrenagem) -->
   <div class="imei-screen" id="imeiScreen">
     <div class="imei-header-actions">
       <div class="close-icon-btn" id="closeImeiBtn">
         <svg viewBox="0 0 24 24">
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </div>
-
-      <div class="config-icon-btn" id="openConfigBtn">
-        <svg viewBox="0 0 24 24">
-          <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
         </svg>
       </div>
     </div>
@@ -685,9 +681,10 @@
     </div>
   </div>
 
+  <!-- Tela de Configuração Inicial -->
   <div class="config-screen" id="configScreen">
     <h1 class="config-title">Configurar Identificadores</h1>
-    <p class="config-subtitle">Insira os números que serão exibidos e gerados dinamicamente ao discar *#06#.</p>
+    <p class="config-subtitle">Insira os números do seu dispositivo para personalizar os identificadores exibidos em *#06#.</p>
 
     <div class="input-group">
       <label for="inputEID">EID (32 dígitos)</label>
@@ -712,7 +709,6 @@
     const DEFAULT_IMEI1 = '359779345308528';
     const DEFAULT_IMEI2 = '359779347140317';
 
-    // Gerador de Código de Barras CODE128 C/B Otimizado (SVG Full-Width)
     const CODE128_PATTERNS = [
       "212222","222122","222221","121223","121322","131222","122213","122312","132212","221213",
       "221312","231212","112232","122132","122231","113222","123122","123221","223211","221132",
@@ -733,7 +729,7 @@
       const digits = text.replace(/\D/g, '');
       if (!digits) return;
 
-      let codes = [105]; // Start C (Otimizado para números)
+      let codes = [105];
       let i = 0;
 
       while (i < digits.length) {
@@ -741,7 +737,7 @@
           codes.push(parseInt(digits.substr(i, 2), 10));
           i += 2;
         } else {
-          codes.push(100); // Alterna para Code B se o número for ímpar
+          codes.push(100);
           codes.push(digits.charCodeAt(i) - 32);
           i += 1;
         }
@@ -752,7 +748,7 @@
         checksum += codes[j] * j;
       }
       codes.push(checksum % 103);
-      codes.push(106); // Stop
+      codes.push(106);
 
       let patternStr = "";
       codes.forEach(c => {
@@ -802,11 +798,35 @@
     const displayEl = document.getElementById('display');
     const addContactBtn = document.getElementById('addContact');
     const deleteBtn = document.getElementById('deleteBtn');
+    const callBtn = document.getElementById('callBtn');
     const imeiScreen = document.getElementById('imeiScreen');
-    const configScreen = document.getElementById('configScreen');
     const closeImeiBtn = document.getElementById('closeImeiBtn');
-    const openConfigBtn = document.getElementById('openConfigBtn');
+    const configScreen = document.getElementById('configScreen');
     const saveConfigBtn = document.getElementById('saveConfigBtn');
+
+    // Executa a verificação imediatamente
+    function checkFirstRun() {
+      const isConfigured = localStorage.getItem('app_configured');
+      if (isConfigured !== 'true') {
+        document.getElementById('inputEID').value = localStorage.getItem('app_eid') || DEFAULT_EID;
+        document.getElementById('inputIMEI1').value = localStorage.getItem('app_imei1') || DEFAULT_IMEI1;
+        document.getElementById('inputIMEI2').value = localStorage.getItem('app_imei2') || DEFAULT_IMEI2;
+        configScreen.classList.add('active');
+      }
+    }
+
+    saveConfigBtn.addEventListener('click', () => {
+      const e = document.getElementById('inputEID').value.trim();
+      const i1 = document.getElementById('inputIMEI1').value.trim();
+      const i2 = document.getElementById('inputIMEI2').value.trim();
+
+      localStorage.setItem('app_eid', e || DEFAULT_EID);
+      localStorage.setItem('app_imei1', i1 || DEFAULT_IMEI1);
+      localStorage.setItem('app_imei2', i2 || DEFAULT_IMEI2);
+      localStorage.setItem('app_configured', 'true');
+
+      configScreen.classList.remove('active');
+    });
 
     function updateDisplay() {
       displayEl.textContent = displayValue;
@@ -866,67 +886,16 @@
     deleteBtn.addEventListener('touchend', () => clearInterval(deleteInterval));
     deleteBtn.addEventListener('touchmove', () => clearInterval(deleteInterval));
 
+    callBtn.addEventListener('click', () => {
+      if (displayValue.trim() !== '') {
+        window.location.href = `tel:${encodeURIComponent(displayValue)}`;
+      }
+    });
+
     function renderBarcodes() {
       const eidVal = (localStorage.getItem('app_eid') || DEFAULT_EID).trim();
       const imei1Val = (localStorage.getItem('app_imei1') || DEFAULT_IMEI1).trim();
       const imei2Val = (localStorage.getItem('app_imei2') || DEFAULT_IMEI2).trim();
 
       document.getElementById('eidLabel').textContent = `EID ${eidVal}`;
-      document.getElementById('imei1Label').textContent = `IMEI ${imei1Val}`;
-      document.getElementById('imei2Label').textContent = `IMEI2 ${imei2Val}`;
-
-      if (eidVal) drawCode128(document.getElementById('barcodeEID'), eidVal);
-      if (imei1Val) drawCode128(document.getElementById('barcodeIMEI1'), imei1Val);
-      if (imei2Val) drawCode128(document.getElementById('barcodeIMEI2'), imei2Val);
-    }
-
-    function openImeiScreen() {
-      renderBarcodes();
-      imeiScreen.classList.add('active');
-    }
-
-    closeImeiBtn.addEventListener('click', () => {
-      imeiScreen.classList.remove('active');
-    });
-
-    openConfigBtn.addEventListener('click', () => {
-      document.getElementById('inputEID').value = localStorage.getItem('app_eid') || DEFAULT_EID;
-      document.getElementById('inputIMEI1').value = localStorage.getItem('app_imei1') || DEFAULT_IMEI1;
-      document.getElementById('inputIMEI2').value = localStorage.getItem('app_imei2') || DEFAULT_IMEI2;
-      configScreen.classList.add('active');
-    });
-
-    saveConfigBtn.addEventListener('click', () => {
-      const e = document.getElementById('inputEID').value;
-      const i1 = document.getElementById('inputIMEI1').value;
-      const i2 = document.getElementById('inputIMEI2').value;
-
-      if (e) localStorage.setItem('app_eid', e);
-      if (i1) localStorage.setItem('app_imei1', i1);
-      if (i2) localStorage.setItem('app_imei2', i2);
-
-      configScreen.classList.remove('active');
-      renderBarcodes();
-    });
-
-    document.querySelectorAll('.tab-item').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-
-        tab.classList.add('active');
-        const targetView = tab.getAttribute('data-tab');
-        document.getElementById(`view-${targetView}`).classList.add('active');
-      });
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker registrado:', reg.scope))
-          .catch(err => console.error('Erro ao registrar Service Worker:', err));
-      });
-    }
-  </script>
-</body>
-</html>
+      document.getElementById('

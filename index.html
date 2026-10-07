@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -61,20 +61,12 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    html {
-      height: 100%;
-      height: -webkit-fill-available;
-    }
-
     body {
       background-color: var(--bg-main);
       color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
       height: 100dvh;
-      min-height: -webkit-fill-available;
-      width: 100vw;
-      position: fixed;
-      inset: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -84,19 +76,18 @@
     .views-container {
       flex: 1;
       position: relative;
-      width: 100%;
-      height: 100%;
       overflow: hidden;
     }
 
     .view {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       display: none;
       flex-direction: column;
-      padding-top: max(env(safe-area-inset-top, 20px), 20px);
+      padding-top: env(safe-area-inset-top, 20px);
       padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));
     }
 
@@ -105,17 +96,17 @@
     }
 
     #view-keypad {
-      justify-content: space-evenly;
+      justify-content: flex-end;
       align-items: center;
-      padding-top: max(env(safe-area-inset-top, 20px), 20px);
       padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));
     }
 
     .display-container {
       width: 100%;
       text-align: center;
+      margin-bottom: 8px;
       padding: 0 20px;
-      min-height: 60px;
+      min-height: 48px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -123,7 +114,7 @@
     }
 
     .phone-number {
-      font-size: 36px;
+      font-size: clamp(28px, 8vw, 36px);
       font-weight: 300;
       letter-spacing: 1px;
       white-space: nowrap;
@@ -148,15 +139,14 @@
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px 20px;
+      gap: clamp(8px, 2vh, 14px) clamp(12px, 4vw, 24px);
+      margin-bottom: clamp(8px, 2vh, 14px);
       justify-items: center;
-      width: 100%;
-      max-width: 320px;
     }
 
     .key {
-      width: clamp(64px, 18vw, 82px);
-      height: clamp(64px, 18vw, 82px);
+      width: clamp(58px, 16vw, 78px);
+      height: clamp(58px, 16vw, 78px);
       border-radius: 50%;
       background-color: var(--bg-card);
       display: flex;
@@ -173,7 +163,7 @@
     }
 
     .number {
-      font-size: 32px;
+      font-size: clamp(26px, 7vw, 32px);
       font-weight: 400;
       line-height: 1;
       color: var(--text-primary);
@@ -182,7 +172,7 @@
     .letters {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       margin-top: 2px;
       color: var(--text-secondary);
     }
@@ -190,7 +180,7 @@
     .actions-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px 20px;
+      gap: clamp(8px, 2vh, 14px) clamp(12px, 4vw, 24px);
       width: 100%;
       max-width: 320px;
       align-items: center;
@@ -199,8 +189,8 @@
 
     .call-btn {
       grid-column: 2;
-      width: clamp(64px, 18vw, 82px);
-      height: clamp(64px, 18vw, 82px);
+      width: clamp(58px, 16vw, 78px);
+      height: clamp(58px, 16vw, 78px);
       border-radius: 50%;
       background-color: #34c759;
       display: flex;
@@ -216,8 +206,8 @@
     }
 
     .call-btn svg {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       fill: #ffffff;
     }
 
@@ -290,7 +280,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 30px;
       color: var(--text-secondary);
       font-size: 11px;
@@ -304,52 +294,16 @@
       color: var(--accent-blue);
     }
 
-    .tab-item .icon-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 3px;
-    }
-
     .tab-item svg {
       width: 20px;
       height: 20px;
       fill: currentColor;
     }
 
-    .tab-item.active svg {
-      fill: var(--accent-blue);
-    }
-
-    .search-btn {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background-color: var(--bg-nav);
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background-color 0.15s ease, transform 0.1s ease;
-    }
-
-    .search-btn:active {
-      background-color: var(--bg-card);
-      transform: scale(0.95);
-    }
-
-    .search-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: var(--text-primary);
-    }
-
-    /* Modais */
-    .imei-screen, .config-screen {
+    .imei-screen {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       background-color: var(--bg-overlay);
@@ -360,12 +314,8 @@
       overflow-y: auto;
     }
 
-    .config-screen {
-      z-index: 5000;
-    }
-
-    .imei-screen.active, .config-screen.active {
-      display: flex !important;
+    .imei-screen.active {
+      display: flex;
     }
 
     .imei-header-actions {
@@ -392,102 +342,11 @@
       fill: var(--icon-fill);
     }
 
-    .imei-screen-title, .config-title {
+    .imei-screen-title {
       font-size: 22px;
       font-weight: 700;
       color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .imei-screen-subtitle, .config-subtitle {
-      font-size: 14px;
-      color: var(--text-sub);
-      line-height: 1.4;
-      margin-bottom: 24px;
-    }
-
-    .barcode-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 22px;
-      width: 100%;
-    }
-
-    .barcode-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-      text-align: center;
-      word-break: break-all;
-    }
-
-    .barcode-box {
-      background-color: var(--barcode-bg);
-      border-radius: 6px;
-      padding: 10px 14px;
-      width: 100%;
-      max-width: 380px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 65px;
-    }
-
-    .barcode-box svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    .share-btn-container, .save-config-btn-container {
-      margin-top: auto;
-      padding-top: 15px;
-      width: 100%;
-    }
-
-    .share-btn, .save-config-btn {
-      width: 100%;
-      background-color: #2a82e4;
-      color: #ffffff;
-      border: none;
-      border-radius: 28px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .save-config-btn {
-      background-color: #34c759;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
-    .input-group label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-blue);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .input-group input {
-      background-color: var(--bg-input);
-      border: 1px solid var(--border-input);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text-primary);
-      font-size: 15px;
-      outline: none;
-      -webkit-user-select: text;
-      user-select: text;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -542,71 +401,88 @@
 
   <div class="bottom-nav-container">
     <div class="tab-bar-pill">
-      <div class="tab-item" data-target="view-recents">
-        <div class="icon-wrapper">
-          <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 7.07 7.07 0 01-6-3.42l-1.42 1.42A8.93 8.93 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-        </div>
+      <div class="tab-item" data-tab="view-recents">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
         <span>Recentes</span>
       </div>
-      <div class="tab-item" data-target="view-contacts">
-        <div class="icon-wrapper">
-          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        </div>
+      <div class="tab-item" data-tab="view-contacts">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         <span>Contatos</span>
       </div>
-      <div class="tab-item active" data-target="view-keypad">
-        <div class="icon-wrapper">
-          <svg viewBox="0 0 24 24"><path d="M12 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        </div>
+      <div class="tab-item active" data-tab="view-keypad">
+        <svg viewBox="0 0 24 24"><path d="M12 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
         <span>Teclado</span>
       </div>
     </div>
-    <button class="search-btn" id="configBtn">
-      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-    </button>
   </div>
 
-  <!-- Tela IMEI Modal -->
   <div class="imei-screen" id="imeiScreen">
     <div class="imei-header-actions">
-      <div class="close-icon-btn" id="closeImei">
+      <div class="close-icon-btn" id="closeImeiBtn">
         <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </div>
     </div>
     <div class="imei-screen-title">Informações do Dispositivo</div>
-    <div class="imei-screen-subtitle">Identificadores do sistema</div>
-    
-    <div class="barcode-section">
-      <div class="barcode-label">IMEI: 354829104820192</div>
-      <div class="barcode-box">
-        <svg viewBox="0 0 100 30"><rect width="100%" height="100%" fill="#fff"/><g fill="#000"><rect x="5" y="0" width="2" height="30"/><rect x="9" y="0" width="1" height="30"/><rect x="12" y="0" width="3" height="30"/><rect x="17" y="0" width="1" height="30"/><rect x="20" y="0" width="2" height="30"/><rect x="24" y="0" width="4" height="30"/><rect x="30" y="0" width="1" height="30"/><rect x="33" y="0" width="2" height="30"/><rect x="37" y="0" width="3" height="30"/><rect x="42" y="0" width="1" height="30"/><rect x="45" y="0" width="2" height="30"/><rect x="49" y="0" width="1" height="30"/><rect x="52" y="0" width="4" height="30"/><rect x="58" y="0" width="2" height="30"/><rect x="62" y="0" width="1" height="30"/><rect x="65" y="0" width="3" height="30"/><rect x="70" y="0" width="2" height="30"/><rect x="74" y="0" width="1" height="30"/><rect x="77" y="0" width="4" height="30"/><rect x="83" y="0" width="1" height="30"/><rect x="86" y="0" width="2" height="30"/><rect x="90" y="0" width="3" height="30"/></g></svg>
-      </div>
-    </div>
-
-    <div class="share-btn-container">
-      <button class="share-btn" id="closeImeiBtn">OK</button>
-    </div>
+    <p style="color: var(--text-sub);">IMEI: 358941092812345</p>
   </div>
 
-  <!-- Tela Configurações Modal -->
-  <div class="config-screen" id="configScreen">
-    <div class="imei-header-actions">
-      <div class="close-icon-btn" id="closeConfig">
-        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-      </div>
-    </div>
-    <div class="config-title">Configurações</div>
-    <div class="config-subtitle">Ajustes da aplicação</div>
+  <script>
+    let currentNumber = "";
+    const display = document.getElementById("display");
+    const deleteBtn = document.getElementById("deleteBtn");
+    const addContactBtn = document.getElementById("addContact");
+    const imeiScreen = document.getElementById("imeiScreen");
+    const closeImeiBtn = document.getElementById("closeImeiBtn");
 
-    <div class="input-group">
-      <label for="inputImei">Número do IMEI</label>
-      <input type="text" id="inputImei" value="354829104820192" placeholder="Digite o IMEI">
-    </div>
+    function updateDisplay() {
+      display.textContent = currentNumber;
+      if (currentNumber.length > 0) {
+        deleteBtn.classList.add("visible");
+        addContactBtn.classList.add("visible");
+      } else {
+        deleteBtn.classList.remove("visible");
+        addContactBtn.classList.remove("visible");
+      }
 
-    <div class="save-config-btn-container">
-      <button class="save-config-btn" id="saveConfig">Salvar</button>
-    </div>
-  </div>
+      if (currentNumber === "*#06#") {
+        imeiScreen.classList.add("active");
+      }
+    }
 
+    document.querySelectorAll(".key").forEach(key => {
+      key.addEventListener("click", () => {
+        currentNumber += key.getAttribute("data-value");
+        updateDisplay();
+      });
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      currentNumber = currentNumber.slice(0, -1);
+      updateDisplay();
+    });
+
+    closeImeiBtn.addEventListener("click", () => {
+      imeiScreen.classList.remove("active");
+      currentNumber = "";
+      updateDisplay();
+    });
+
+    document.querySelectorAll(".tab-item").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab-item").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+        
+        tab.classList.add("active");
+        const targetView = tab.getAttribute("data-tab");
+        document.getElementById(targetView).classList.add("active");
+      });
+    });
+
+    document.getElementById("callBtn").addEventListener("click", () => {
+      if (currentNumber) {
+        window.location.href = "tel:" + currentNumber;
+      }
+    });
+  </script>
 </body>
 </html>

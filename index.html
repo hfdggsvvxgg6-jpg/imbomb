@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -61,11 +61,20 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    html {
+      height: 100%;
+      height: -webkit-fill-available;
+    }
+
     body {
       background-color: var(--bg-main);
       color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-      height: 100vh;
+      height: 100dvh;
+      min-height: -webkit-fill-available;
+      width: 100vw;
+      position: fixed;
+      inset: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -75,19 +84,20 @@
     .views-container {
       flex: 1;
       position: relative;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
 
     .view {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       display: none;
       flex-direction: column;
-      padding-top: env(safe-area-inset-top, 40px);
-      padding-bottom: 80px;
+      padding-top: max(env(safe-area-inset-top, 20px), 20px);
+      padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));
     }
 
     .view.active {
@@ -95,17 +105,17 @@
     }
 
     #view-keypad {
-      justify-content: flex-end;
+      justify-content: space-evenly;
       align-items: center;
-      padding-bottom: 125px;
+      padding-top: max(env(safe-area-inset-top, 20px), 20px);
+      padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));
     }
 
     .display-container {
       width: 100%;
       text-align: center;
-      margin-bottom: 12px;
       padding: 0 20px;
-      min-height: 52px;
+      min-height: 60px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -139,13 +149,14 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px 20px;
-      margin-bottom: 12px;
       justify-items: center;
+      width: 100%;
+      max-width: 320px;
     }
 
     .key {
-      width: clamp(68px, 20vw, 92px);
-      height: clamp(68px, 20vw, 92px);
+      width: clamp(64px, 18vw, 82px);
+      height: clamp(64px, 18vw, 82px);
       border-radius: 50%;
       background-color: var(--bg-card);
       display: flex;
@@ -162,14 +173,14 @@
     }
 
     .number {
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 400;
       line-height: 1;
       color: var(--text-primary);
     }
 
     .letters {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: 2px;
       margin-top: 2px;
@@ -184,13 +195,12 @@
       max-width: 320px;
       align-items: center;
       justify-items: center;
-      margin-bottom: 5px;
     }
 
     .call-btn {
       grid-column: 2;
-      width: clamp(68px, 20vw, 92px);
-      height: clamp(68px, 20vw, 92px);
+      width: clamp(64px, 18vw, 82px);
+      height: clamp(64px, 18vw, 82px);
       border-radius: 50%;
       background-color: #34c759;
       display: flex;
@@ -206,8 +216,8 @@
     }
 
     .call-btn svg {
-      width: 38px;
-      height: 38px;
+      width: 34px;
+      height: 34px;
       fill: #ffffff;
     }
 
@@ -230,8 +240,8 @@
     }
 
     .delete-btn svg {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       fill: var(--icon-fill);
     }
 
@@ -303,8 +313,8 @@
     }
 
     .tab-item svg {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       fill: currentColor;
     }
 
@@ -312,26 +322,9 @@
       fill: var(--accent-blue);
     }
 
-    .badge {
-      position: absolute;
-      top: -3px;
-      right: -6px;
-      background-color: #ff3b30;
-      color: #ffffff;
-      font-size: 10px;
-      font-weight: 700;
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1.5px solid var(--bg-nav);
-    }
-
     .search-btn {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       background-color: var(--bg-nav);
       border: none;
@@ -348,15 +341,15 @@
     }
 
     .search-btn svg {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       fill: var(--text-primary);
     }
 
-    .imei-screen {
+    /* Modais */
+    .imei-screen, .config-screen {
       position: fixed;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       background-color: var(--bg-overlay);
@@ -367,8 +360,12 @@
       overflow-y: auto;
     }
 
-    .imei-screen.active {
-      display: flex;
+    .config-screen {
+      z-index: 5000;
+    }
+
+    .imei-screen.active, .config-screen.active {
+      display: flex !important;
     }
 
     .imei-header-actions {
@@ -395,19 +392,18 @@
       fill: var(--icon-fill);
     }
 
-    .imei-screen-title {
+    .imei-screen-title, .config-title {
       font-size: 22px;
       font-weight: 700;
       color: var(--text-primary);
-      line-height: 1.25;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .imei-screen-subtitle {
-      font-size: 15px;
+    .imei-screen-subtitle, .config-subtitle {
+      font-size: 14px;
       color: var(--text-sub);
-      line-height: 1.35;
-      margin-bottom: 28px;
+      line-height: 1.4;
+      margin-bottom: 24px;
     }
 
     .barcode-section {
@@ -424,7 +420,6 @@
       color: var(--text-primary);
       margin-bottom: 8px;
       text-align: center;
-      letter-spacing: 0.2px;
       word-break: break-all;
     }
 
@@ -443,16 +438,15 @@
     .barcode-box svg {
       width: 100%;
       height: 100%;
-      display: block;
     }
 
-    .share-btn-container {
+    .share-btn-container, .save-config-btn-container {
       margin-top: auto;
       padding-top: 15px;
       width: 100%;
     }
 
-    .share-btn {
+    .share-btn, .save-config-btn {
       width: 100%;
       background-color: #2a82e4;
       color: #ffffff;
@@ -463,44 +457,10 @@
       font-weight: 600;
       cursor: pointer;
       text-align: center;
-      transition: background-color 0.15s ease;
     }
 
-    .share-btn:active {
-      background-color: #1e6bc4;
-    }
-
-    /* Tela de Configuração */
-    .config-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-overlay);
-      display: none;
-      flex-direction: column;
-      z-index: 5000;
-      padding: calc(env(safe-area-inset-top, 20px) + 20px) 24px calc(env(safe-area-inset-bottom, 20px) + 20px) 24px;
-      overflow-y: auto;
-    }
-
-    .config-screen.active {
-      display: flex !important;
-    }
-
-    .config-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .config-subtitle {
-      font-size: 14px;
-      color: var(--text-sub);
-      margin-bottom: 28px;
-      line-height: 1.4;
+    .save-config-btn {
+      background-color: #34c759;
     }
 
     .input-group {
@@ -528,25 +488,6 @@
       outline: none;
       -webkit-user-select: text;
       user-select: text;
-    }
-
-    .save-config-btn {
-      width: 100%;
-      background-color: #34c759;
-      color: #ffffff;
-      border: none;
-      border-radius: 28px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: auto;
-      text-align: center;
-      transition: background-color 0.15s ease;
-    }
-
-    .save-config-btn:active {
-      background-color: #28a745;
     }
   </style>
 </head>
@@ -580,4 +521,92 @@
         <div class="key" data-value="4"><span class="number">4</span><span class="letters">G H I</span></div>
         <div class="key" data-value="5"><span class="number">5</span><span class="letters">J K L</span></div>
         <div class="key" data-value="6"><span class="number">6</span><span class="letters">M N O</span></div>
-        <div class="key" data-value="7"><span class="number">7</span><span class="letters">P Q
+        <div class="key" data-value="7"><span class="number">7</span><span class="letters">P Q R S</span></div>
+        <div class="key" data-value="8"><span class="number">8</span><span class="letters">T U V</span></div>
+        <div class="key" data-value="9"><span class="number">9</span><span class="letters">W X Y Z</span></div>
+        <div class="key" data-value="*"><span class="number">*</span><span class="letters">&nbsp;</span></div>
+        <div class="key" data-value="0"><span class="number">0</span><span class="letters">+</span></div>
+        <div class="key" data-value="#"><span class="number">#</span><span class="letters">&nbsp;</span></div>
+      </div>
+
+      <div class="actions-row">
+        <div class="call-btn" id="callBtn">
+          <svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+        </div>
+        <div class="delete-btn" id="deleteBtn">
+          <svg viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav-container">
+    <div class="tab-bar-pill">
+      <div class="tab-item" data-target="view-recents">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 7.07 7.07 0 01-6-3.42l-1.42 1.42A8.93 8.93 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        </div>
+        <span>Recentes</span>
+      </div>
+      <div class="tab-item" data-target="view-contacts">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+        <span>Contatos</span>
+      </div>
+      <div class="tab-item active" data-target="view-keypad">
+        <div class="icon-wrapper">
+          <svg viewBox="0 0 24 24"><path d="M12 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        </div>
+        <span>Teclado</span>
+      </div>
+    </div>
+    <button class="search-btn" id="configBtn">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
+  </div>
+
+  <!-- Tela IMEI Modal -->
+  <div class="imei-screen" id="imeiScreen">
+    <div class="imei-header-actions">
+      <div class="close-icon-btn" id="closeImei">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </div>
+    </div>
+    <div class="imei-screen-title">Informações do Dispositivo</div>
+    <div class="imei-screen-subtitle">Identificadores do sistema</div>
+    
+    <div class="barcode-section">
+      <div class="barcode-label">IMEI: 354829104820192</div>
+      <div class="barcode-box">
+        <svg viewBox="0 0 100 30"><rect width="100%" height="100%" fill="#fff"/><g fill="#000"><rect x="5" y="0" width="2" height="30"/><rect x="9" y="0" width="1" height="30"/><rect x="12" y="0" width="3" height="30"/><rect x="17" y="0" width="1" height="30"/><rect x="20" y="0" width="2" height="30"/><rect x="24" y="0" width="4" height="30"/><rect x="30" y="0" width="1" height="30"/><rect x="33" y="0" width="2" height="30"/><rect x="37" y="0" width="3" height="30"/><rect x="42" y="0" width="1" height="30"/><rect x="45" y="0" width="2" height="30"/><rect x="49" y="0" width="1" height="30"/><rect x="52" y="0" width="4" height="30"/><rect x="58" y="0" width="2" height="30"/><rect x="62" y="0" width="1" height="30"/><rect x="65" y="0" width="3" height="30"/><rect x="70" y="0" width="2" height="30"/><rect x="74" y="0" width="1" height="30"/><rect x="77" y="0" width="4" height="30"/><rect x="83" y="0" width="1" height="30"/><rect x="86" y="0" width="2" height="30"/><rect x="90" y="0" width="3" height="30"/></g></svg>
+      </div>
+    </div>
+
+    <div class="share-btn-container">
+      <button class="share-btn" id="closeImeiBtn">OK</button>
+    </div>
+  </div>
+
+  <!-- Tela Configurações Modal -->
+  <div class="config-screen" id="configScreen">
+    <div class="imei-header-actions">
+      <div class="close-icon-btn" id="closeConfig">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </div>
+    </div>
+    <div class="config-title">Configurações</div>
+    <div class="config-subtitle">Ajustes da aplicação</div>
+
+    <div class="input-group">
+      <label for="inputImei">Número do IMEI</label>
+      <input type="text" id="inputImei" value="354829104820192" placeholder="Digite o IMEI">
+    </div>
+
+    <div class="save-config-btn-container">
+      <button class="save-config-btn" id="saveConfig">Salvar</button>
+    </div>
+  </div>
+
+</body>
+</html>
